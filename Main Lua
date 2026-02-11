@@ -1,0 +1,240 @@
+-- =========================
+-- WIND UI LOAD
+-- =========================
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "Zyqrin Hub || JFB",
+    Icon = "rbxassetid://73349555895759",
+    Author = "by zyqrin",
+    KeySystem = {                                                   
+        Note = "Example Key System. With platoboost.",              
+        API = {                                                     
+            { -- PlatoBoost
+                Type = "platoboost",                                
+                ServiceId = 19724, -- service id
+                Secret = "7065f5da-64e9-4933-b1ae-f920906e66d0", -- platoboost secret
+            },                                                      
+        },                                                          
+    },                                                              
+})
+
+Window:Tag({
+    Title = "v1.0",
+    Icon = "rocket",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 13,
+})
+
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+})
+
+-- HEADER (JUDUL + LOGO)
+InfoTab:Paragraph({
+    Title = "Zyqrin Key Premium",
+    Desc = "Buy Key Premium All Game",
+    Image = "rbxassetid://73349555895759",
+    ImageSize = 48,
+})
+
+-- INFO BOX (TEXT SEPERTI GAMBAR)
+InfoTab:Paragraph({
+    Title = "List Script",
+    Desc = [[
+• Survive LAVA for Brainrots
+• Escape Tsunami For Brainrots!
+• Save Brainrots from LAVA
+• Climb For Brainrots
+• Jump for Brainrots!
+
+Join Discord untuk buy key Premium all game
+]],
+})
+
+-- COPY DISCORD BUTTON
+InfoTab:Button({
+    Title = "COPY LINK DISCORD",
+    Desc = "Salin link Discord Zyqrin",
+    Icon = "copy",
+    Callback = function()
+        pcall(function()
+            setclipboard("https://discord.gg/tHh4xbCsTQ")
+        end)
+
+        WindUI:Notify({
+            Title = "Discord",
+            Content = "Link Discord berhasil di-copy!",
+            Duration = 2
+        })
+    end
+})
+
+
+local MainTab = Window:Tab({
+    Title = "Farm",
+    Icon = "navigation",
+})
+
+local ShopTab = Window:Tab({
+    Title = "Farm",
+    Icon = "shopping-cart",
+})
+
+local MainSection = MainTab:Section({ Title = "FARM", Box = true, Opened = false })
+
+local SpeedSection = ShopTab:Section({ Title = "SPEED", Box = true, Opened = false })
+
+local RbSection = ShopTab:Section({ Title = "REBIRTH", Box = true, Opened = false })
+
+local SellSection = ShopTab:Section({ Title = "SELL", Box = true, Opened = false })
+
+
+-- =========================
+-- SERVICES
+-- =========================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local Remotes = game:GetService("ReplicatedStorage"):WaitForChild("Remotes")
+
+local BACK_POS = Vector3.new(26.8, 3.0, -154.0)
+
+-- =========================
+-- FLAGS
+-- =========================
+local takeRunning = false
+local sellRunning = false
+local rebirthRunning = false
+local speedRunning = false
+
+-- =========================
+-- CORE FUNCTIONS
+-- =========================
+local function hrp()
+    return (player.Character or player.CharacterAdded:Wait()):WaitForChild("HumanoidRootPart")
+end
+
+local function tp(pos)
+    hrp().CFrame = CFrame.new(pos)
+end
+
+local function instantTake(prompt)
+    pcall(function()
+        if fireproximityprompt then
+            fireproximityprompt(prompt)
+        else
+            prompt:InputHoldBegin()
+            prompt:InputHoldEnd()
+        end
+    end)
+end
+
+local function processOne(brainrot)
+    local takePart = brainrot:FindFirstChild("TakePart")
+    local prompt = takePart and takePart:FindFirstChild("ProximityPrompt")
+    if not prompt then return end
+
+    tp(takePart.Position)
+    task.wait(0.15)
+
+    instantTake(prompt)
+    task.wait(0.2)
+
+    tp(BACK_POS)
+    task.wait(0.25)
+end
+
+local function loopBrainrots()
+    local folder = workspace:FindFirstChild("Brainrots")
+    if not folder then return end
+
+    for _, brainrot in ipairs(folder:GetChildren()) do
+        if not takeRunning then break end
+        processOne(brainrot)
+    end
+end
+
+-- =========================
+-- UI TOGGLES
+-- =========================
+
+MainSection:Toggle({
+    Title = "Auto Farm",
+    Desc = "TP → Take → Back",
+    Value = false,
+    Callback = function(state)
+        takeRunning = state
+        if state then
+            task.spawn(function()
+                while takeRunning do
+                    loopBrainrots()
+                    task.wait(0.6)
+                end
+            end)
+        end
+    end
+})
+
+SellSection:Toggle({
+    Title = "Sell All",
+    Value = false,
+    Callback = function(state)
+        sellRunning = state
+        if state then
+            task.spawn(function()
+                while sellRunning do
+                    pcall(function()
+                        Remotes.SellInventory:FireServer()
+                    end)
+                    task.wait(2)
+                end
+            end)
+        end
+    end
+})
+
+RbSection:Toggle({
+    Title = "Auto Rebirth",
+    Value = false,
+    Callback = function(state)
+        rebirthRunning = state
+        if state then
+            task.spawn(function()
+                while rebirthRunning do
+                    pcall(function()
+                        Remotes.RebirthRemote:FireServer()
+                    end)
+                    task.wait(3)
+                end
+            end)
+        end
+    end
+})
+
+SpeedSection:Toggle({
+    Title = "Buy Speed",
+    Value = false,
+    Callback = function(state)
+        speedRunning = state
+        if state then
+            task.spawn(function()
+                while speedRunning do
+                    pcall(function()
+                        Remotes.UpgradeJump2:FireServer()
+                    end)
+                    task.wait(1.5)
+                end
+            end)
+        end
+    end
+})
+
+MainSection:Button({
+    Title = "TP Base",
+    Callback = function()
+        tp(BACK_POS)
+    end
+})
+
+print("Brainrot Farm Hub Loaded")
